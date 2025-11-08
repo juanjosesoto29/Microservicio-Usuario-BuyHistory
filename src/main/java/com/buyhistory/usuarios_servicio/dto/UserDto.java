@@ -1,15 +1,20 @@
 package com.buyhistory.usuarios_servicio.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserDto {
-    private Long id;
+
+    private String id;
     private String name;
     private String email;
     private String role;
+    private boolean enabled;
+    private boolean isAdmin;
 }

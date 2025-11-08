@@ -1,10 +1,12 @@
 package com.buyhistory.usuarios_servicio.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @AllArgsConstructor
-public class ApiResponse {
+public class ApiResponse<T> {
+    private boolean ok;
     private String message;
+    private T data;
 }

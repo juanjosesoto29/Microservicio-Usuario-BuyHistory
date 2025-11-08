@@ -1,6 +1,5 @@
 package com.buyhistory.usuarios_servicio.service;
 
-import com.buyhistory.usuarios_servicio.dto.LoginRequest;
 import com.buyhistory.usuarios_servicio.dto.RegisterRequest;
 import com.buyhistory.usuarios_servicio.dto.UserDto;
 
@@ -8,15 +7,11 @@ import java.util.List;
 
 public interface UserService {
 
-    List<UserDto> findAll();
-
-    UserDto findById(Long id);
+    UserDto login(String email, String rawPassword);
 
     UserDto register(RegisterRequest request);
 
-    UserDto login(LoginRequest request);
-    
-    UserDto updateRole(Long id, String role);
+    List<UserDto> findAll();
 
-    void delete(Long id);
+    UserDto updateRole(String userId, String newRole);
 }

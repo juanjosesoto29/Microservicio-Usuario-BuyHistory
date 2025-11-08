@@ -1,31 +1,25 @@
 package com.buyhistory.usuarios_servicio.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Document(collection = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false, unique = true)
     private String email;
-
-    // Para la tarea lo dejamos sin encriptar (NO para producción)
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
-    private String role; // "admin", "cliente", etc.
+    private String role;        // "ADMIN", "CLIENTE"
+    private boolean enabled;
 }

@@ -9,15 +9,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desactiva CSRF (para poder usar Postman/React)
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/**").permitAll() // permite libre acceso a tus endpoints REST
                 .anyRequest().permitAll()
-            )
-            .formLogin(form -> form.disable())  // Desactiva el login HTML automático
-            .httpBasic(basic -> basic.disable()); // Desactiva auth básica
+            );
         return http.build();
     }
 }

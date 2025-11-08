@@ -1,11 +1,11 @@
 package com.buyhistory.usuarios_servicio.service;
 
-import com.buyhistory.usuarios_servicio.dto.LoginRequest;
 import com.buyhistory.usuarios_servicio.dto.RegisterRequest;
 import com.buyhistory.usuarios_servicio.dto.UserDto;
 import com.buyhistory.usuarios_servicio.model.User;
 import com.buyhistory.usuarios_servicio.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,80 +14,65 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    private UserDto toDto(User user) {
-        if (user == null) return null;
+    private UserDto map(User u) {
         return UserDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
+                .id(u.getId())
+                .name(u.getName())
+                .email(u.getEmail())
+                .role(u.getRole())
+                .enabled(u.isEnabled())
+                .isAdmin("ADMIN".equalsIgnoreCase(u.getRole()))
                 .build();
     }
 
     @Override
+    public UserDto login(String email, String rawPassword) {
+        User user = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new RuntimeException("Credenciales inválidas");
+        }
+
+        return map(user);
+    }
+
+    @Override
+    public UserDto register(RegisterRequest request) {
+        // Validar correo repetido
+        repository.findByEmail(request.getEmail())
+                .ifPresent(u -> {
+                    throw new RuntimeException("El correo ya está registrado");
+                });
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role("CLIENTE")
+                .enabled(true)
+                .build();
+
+        return map(repository.save(user));
+    }
+
+    @Override
     public List<UserDto> findAll() {
-        return userRepository.findAll()
+        return repository.findAll()
                 .stream()
-                .map(this::toDto)
+                .map(this::map)
                 .toList();
     }
 
     @Override
-    public UserDto findById(Long id) {
-        return userRepository.findById(id)
-                .map(this::toDto)
-                .orElse(null);
+    public UserDto updateRole(String userId, String newRole) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        user.setRole(newRole);
+        return map(repository.save(user));
     }
-
-    @Override
-public UserDto register(RegisterRequest request) {
-    String email = request.getEmail().trim();
-
-    // Verificar correo único
-    userRepository.findByEmailIgnoreCase(email)
-            .ifPresent(u -> {
-                throw new RuntimeException("El correo ya está registrado");
-            });
-
-    User user = User.builder()
-            .name(request.getName())
-            .email(email)
-            .password(request.getPassword()) // texto plano para demo
-            .role("cliente")
-            .build();
-
-    User saved = userRepository.save(user);
-    return toDto(saved);
-}
-
-
-    @Override
-public UserDto login(LoginRequest request) {
-    String email = request.getEmail().trim();
-
-    return userRepository.findByEmail(email)
-            .filter(u -> u.getPassword().equals(request.getPassword()))
-            .map(this::toDto)
-            .orElse(null);
-}
-
-
-    @Override
-    public void delete(Long id) {
-        userRepository.deleteById(id);
-    }
-
-    @Override
-public UserDto updateRole(Long id, String role) {
-    return userRepository.findById(id)
-            .map(user -> {
-                user.setRole(role);
-                User saved = userRepository.save(user);
-                return toDto(saved);
-            })
-            .orElse(null);
-}
-
 }
