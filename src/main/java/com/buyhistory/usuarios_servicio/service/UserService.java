@@ -1,17 +1,15 @@
 package com.buyhistory.usuarios_servicio.service;
 
-import com.buyhistory.usuarios_servicio.dto.RegisterRequest;
-import com.buyhistory.usuarios_servicio.dto.UserDto;
-
+import com.buyhistory.usuarios_servicio.dto.*;
 import java.util.List;
 
 public interface UserService {
 
-    UserDto login(String email, String rawPassword);
+    UserDto login(LoginRequest request);
 
-    UserDto register(RegisterRequest request);
+    ApiResponse register(RegisterRequest request);
 
     List<UserDto> findAll();
 
-    UserDto updateRole(String userId, String newRole);
+    UserDto updateRole(String id, String role);
 }
