@@ -1,87 +1,67 @@
 package com.buyhistory.usuarios_servicio.service;
 
-import com.buyhistory.usuarios_servicio.dto.*;
 import com.buyhistory.usuarios_servicio.model.User;
 import com.buyhistory.usuarios_servicio.repository.UserRepository;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-
-    public UserServiceImpl(UserRepository repository) {
-        this.repository = repository;
-    }
-
-    // ====== helpers de mapeo ======
-
-    private UserDto mapToDto(User u) {
-        return new UserDto(
-                u.getId(),
-                u.getName(),
-                u.getEmail(),
-                u.getRole()
-        );
-    }
-
-    // ====== implementación de métodos ======
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDto login(LoginRequest request) {
-        User user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.BAD_REQUEST, "Correo o contraseña incorrectos")
-                );
+    public User login(String email, String rawPassword) {
+        User user = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Por simplicidad usamos contraseña en texto plano
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Correo o contraseña incorrectos");
+        // Comparamos la contraseña en texto plano con la encriptada
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new RuntimeException("Contraseña incorrecta");
         }
 
-        return mapToDto(user);
+        return user;
     }
 
     @Override
-    public ApiResponse register(RegisterRequest request) {
-        boolean exists = repository.findByEmail(request.getEmail()).isPresent();
-        if (exists) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El correo ya está registrado");
+    public User register(String name, String email, String rawPassword) {
+        if (repository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("El correo ya está registrado");
         }
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // texto plano para mantenerlo simple
-        user.setRole("CLIENTE");
+        User user = User.builder()
+                .name(name)
+                .email(email)
+                .password(passwordEncoder.encode(rawPassword))
+                .role("client")           // por defecto cliente
+                .createdAt(Instant.now())
+                .build();
 
-        repository.save(user);
-
-        return new ApiResponse("Usuario registrado exitosamente");
+        return repository.save(user);
     }
 
     @Override
-    public List<UserDto> findAll() {
-        return repository.findAll()
-                .stream()
-                .map(this::mapToDto)
-                .toList();
+    public List<User> findAll() {
+        return repository.findAll();
     }
 
     @Override
-    public UserDto updateRole(String id, String role) {
+    public void deleteById(String id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public User updateRole(String id, String role) {
         User user = repository.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")
-                );
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         user.setRole(role);
-        repository.save(user);
-
-        return mapToDto(user);
+        return repository.save(user);
     }
 }
