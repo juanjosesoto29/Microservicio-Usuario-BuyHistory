@@ -75,4 +75,12 @@ public class UserServiceImpl implements UserService {
         usuario.setRole(newRole);
         return map(repository.save(usuario));
     }
+
+    @Override
+    public void deleteUser(Long id) {
+        Usuario usuario = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        repository.delete(usuario);
+    }
 }

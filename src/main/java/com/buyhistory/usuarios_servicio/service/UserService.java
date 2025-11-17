@@ -14,4 +14,6 @@ public interface UserService {
     List<UserDto> findAll();
 
     UserDto updateRole(Long userId, String newRole);  // Long para MySQL
+
+    void deleteUser(Long userId);  // Long para MySQL
 }

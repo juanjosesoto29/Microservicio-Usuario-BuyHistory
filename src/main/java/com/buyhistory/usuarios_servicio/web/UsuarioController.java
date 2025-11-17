@@ -14,37 +14,43 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/usuarios")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // para desarrollo, luego puedes restringir
+@CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
     private final UserService userService;
 
-    // POST /api/v1/usuarios/login
-    @PostMapping("/login")
+    // ============================
+    // LOGIN
+    // ============================
+    @PostMapping("/auth/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
         UserDto user = userService.login(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(user);
     }
 
-    // POST /api/v1/usuarios/register
-    @PostMapping("/register")
+    // ============================
+    // REGISTRO
+    // ============================
+    @PostMapping("/auth/register")
     public ResponseEntity<UserDto> register(@RequestBody RegisterRequest request) {
         UserDto user = userService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    // GET /api/v1/usuarios
-    @GetMapping
+    // ============================
+    // LISTAR USUARIOS
+    // ============================
+    @GetMapping("/users")
     public ResponseEntity<List<UserDto>> findAll() {
-        List<UserDto> users = userService.findAll();
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userService.findAll());
     }
 
-    // PATCH /api/v1/usuarios/{id}/rol
-    // Body: { "role": "ADMIN" }
-    @PatchMapping("/{id}/rol")
+    // ============================
+    // CAMBIAR ROL
+    // ============================
+    @PatchMapping("/users/{id}/role")
     public ResponseEntity<ApiResponse> updateRole(
             @PathVariable Long id,
             @RequestBody UpdateRoleRequest request
@@ -54,6 +60,23 @@ public class UsuarioController {
         ApiResponse response = ApiResponse.builder()
                 .message("Rol actualizado a " + updated.getRole() +
                          " para el usuario con id " + updated.getId())
+                .status(HttpStatus.OK.value())
+                .success(true)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    // ============================
+    // ELIMINAR USUARIO
+    // ============================
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long id) {
+
+        userService.deleteUser(id);
+
+        ApiResponse response = ApiResponse.builder()
+                .message("Usuario " + id + " eliminado correctamente")
                 .status(HttpStatus.OK.value())
                 .success(true)
                 .build();
