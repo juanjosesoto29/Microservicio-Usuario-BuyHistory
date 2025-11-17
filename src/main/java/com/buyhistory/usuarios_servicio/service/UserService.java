@@ -1,18 +1,17 @@
 package com.buyhistory.usuarios_servicio.service;
 
-import com.buyhistory.usuarios_servicio.model.User;
+import com.buyhistory.usuarios_servicio.dto.RegisterRequest;
+import com.buyhistory.usuarios_servicio.dto.UserDto;
 
 import java.util.List;
 
 public interface UserService {
 
-    User login(String email, String rawPassword);
+    UserDto login(String email, String rawPassword);
 
-    User register(String name, String email, String rawPassword);
+    UserDto register(RegisterRequest request);
 
-    List<User> findAll();
+    List<UserDto> findAll();
 
-    void deleteById(String id);
-
-    User updateRole(String id, String role);
+    UserDto updateRole(Long userId, String newRole);  // Long para MySQL
 }

@@ -1,21 +1,8 @@
 package com.buyhistory.usuarios_servicio.dto;
 
+import lombok.Data;
+
+@Data
 public class UpdateRoleRequest {
-
-    private String role;
-
-    public UpdateRoleRequest() {
-    }
-
-    public UpdateRoleRequest(String role) {
-        this.role = role;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+    private String role;   // Ej: "ADMIN" o "CLIENTE"
 }
